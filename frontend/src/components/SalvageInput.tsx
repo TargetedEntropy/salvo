@@ -67,7 +67,14 @@ const SalvageInput: React.FC<SalvageInputProps> = ({
 
       // Match EVE detailed format with multiple columns (item name, qty, category, type, volume, ISK)
       // Example: "Broken Drone Transceiver    3    Salvaged Materials    Material            0.03 m3    13,065.96 ISK"
-      match = trimmed.match(/^(.+?)\s{2,}(\d+)\s{2,}.+$/);
+      // This format uses tabs and/or multiple spaces between columns
+      // Try to match: name, then (tab OR 2+ spaces), then number, then (tab OR space), then rest
+      match = trimmed.match(/^(.+?)(?:\t+|\s{2,})(\d+)(?:\t|\s).+$/);
+
+      if (!match) {
+        // Also try just: name, whitespace, number, whitespace, anything else
+        match = trimmed.match(/^(.+?)\s+(\d+)\s+\S.+$/);
+      }
 
       if (!match) {
         // Match "x" separator (e.g., "Tripped Power Circuit x120")
@@ -104,7 +111,10 @@ const SalvageInput: React.FC<SalvageInputProps> = ({
     const items = parsePastedItems(pasteText);
 
     if (items.length === 0) {
-      alert('No valid items found. Expected format:\nItem Name x123\nor\nItem Name  123');
+      alert('No valid items found. Supported formats:\n\n' +
+        '• EVE multi-column: Item Name    3    Salvaged Materials...\n' +
+        '• x-separator: Item Name x123\n' +
+        '• Space/tab separated: Item Name  123');
       return;
     }
 
