@@ -33,11 +33,11 @@ COPY --from=builder /app/target/release/salvo-backend /app/salvo-backend
 # Copy migrations
 COPY migrations ./migrations
 
-# Create data directory for database
-RUN mkdir -p /app/data
+# Create data directory for database with proper permissions
+RUN mkdir -p /app/data && chmod 777 /app/data
 
 # Environment variables
-ENV DATABASE_URL=sqlite:/app/data/salvo.db
+ENV DATABASE_URL=sqlite:/app/data/salvo.db?mode=rwc
 ENV RUST_LOG=salvo_backend=info,tower_http=info
 
 # Expose port
