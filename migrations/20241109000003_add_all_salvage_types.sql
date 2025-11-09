@@ -18,6 +18,7 @@ INSERT INTO eve_types (type_id, name, description, group_id, category_id) VALUES
 (25604, 'Contaminated Nanite Compound', 'Salvaged from wrecks', 966, 25),
 (25605, 'Burned Logic Circuit', 'Salvaged from wrecks', 966, 25),
 (25606, 'Armor Plates', 'Salvaged from wrecks', 966, 25),
+(28668, 'Contaminated Lorentz Fluid', 'Salvaged from wrecks', 966, 25),
 -- Ancient Salvage
 (30752, 'Alloyed Tritanium Bar', 'Ancient salvage', 966, 25),
 (30753, 'Carbonized Lead', 'Ancient salvage', 966, 25),
