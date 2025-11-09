@@ -32,9 +32,11 @@ See [PROJECT_SPEC.md](PROJECT_SPEC.md) for detailed requirements and architectur
 
 - Rust 1.70+ ([install via rustup](https://rustup.rs/))
 - SQLite 3
+- Docker (optional, for containerized deployment)
 
 ### Setup
 
+**Option 1: Local Development**
 ```bash
 # Clone the repository
 git clone <repository-url>
@@ -45,6 +47,16 @@ cp .env.example .env
 
 # Build and run
 cargo run
+```
+
+**Option 2: Docker**
+```bash
+# Build and run with Docker Compose
+docker-compose up -d
+
+# Or build manually
+docker build -t salvo-backend .
+docker run -p 3000:3000 -v $(pwd)/data:/app/data salvo-backend
 ```
 
 The server will start on `http://127.0.0.1:3000`
@@ -230,9 +242,36 @@ Get cached market prices from database.
 ]
 ```
 
+## Deployment
+
+### Docker Deployment
+
+The project includes Docker support for easy deployment:
+
+```bash
+# Using Docker Compose (recommended)
+docker-compose up -d
+
+# Check logs
+docker-compose logs -f
+
+# Stop
+docker-compose down
+```
+
+### Environment Variables
+
+See `.env.example` for available configuration options:
+- `DATABASE_URL` - SQLite database path
+- `RUST_LOG` - Logging level
+
+## Contributing
+
+Contributions are welcome! Please read [CONTRIBUTING.md](CONTRIBUTING.md) for guidelines.
+
 ## Roadmap
 
-### Phase 1 (Current)
+### Phase 1 (Current - MVP Complete ✅)
 - Core salvage analysis engine
 - Blueprint matching
 - Basic market integration

@@ -1,0 +1,23 @@
+version: '3.8'
+
+services:
+  salvo-backend:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: salvo-backend
+    ports:
+      - "3000:3000"
+    environment:
+      - DATABASE_URL=sqlite:/app/data/salvo.db
+      - RUST_LOG=salvo_backend=info,tower_http=info
+    volumes:
+      # Persist database
+      - ./data:/app/data
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:3000/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 40s

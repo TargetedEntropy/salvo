@@ -2,6 +2,12 @@
 name = "salvo-backend"
 version = "0.1.0"
 edition = "2021"
+authors = ["Brian Merriam"]
+description = "EVE Online Serpentis Salvage Industrial Planner - Backend API"
+license = "MIT"
+repository = "https://github.com/yourusername/salvo"
+keywords = ["eve-online", "salvage", "industry", "gaming", "api"]
+categories = ["games", "web-programming"]
 
 [dependencies]
 # Web framework
