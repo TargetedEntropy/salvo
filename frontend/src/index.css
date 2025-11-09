@@ -1,0 +1,31 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+  body {
+    @apply bg-eve-darker text-gray-100 font-sans antialiased;
+  }
+}
+
+@layer components {
+  .card {
+    @apply bg-eve-dark rounded-lg shadow-lg p-6 border border-gray-800;
+  }
+
+  .btn-primary {
+    @apply bg-eve-accent hover:bg-eve-accent/80 text-eve-darker font-semibold py-2 px-4 rounded transition-colors;
+  }
+
+  .btn-secondary {
+    @apply bg-gray-700 hover:bg-gray-600 text-gray-100 font-semibold py-2 px-4 rounded transition-colors;
+  }
+
+  .input {
+    @apply bg-eve-gray border border-gray-700 text-gray-100 rounded px-3 py-2 focus:outline-none focus:border-eve-accent;
+  }
+
+  .label {
+    @apply block text-sm font-medium text-gray-300 mb-1;
+  }
+}
