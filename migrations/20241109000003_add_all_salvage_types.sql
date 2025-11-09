@@ -98,5 +98,10 @@ INSERT INTO material_reprocessing (source_type_id, material_type_id, quantity) V
 (30759, 34, 110), -- Tritanium
 (30759, 35, 70),  -- Pyerite
 (30759, 36, 40),  -- Mexallon
-(30759, 37, 18)  -- Isogen
+(30759, 37, 18),  -- Isogen
+-- Contaminated Lorentz Fluid
+(28668, 34, 100), -- Tritanium
+(28668, 35, 55),  -- Pyerite
+(28668, 36, 30),  -- Mexallon
+(28668, 37, 15)  -- Isogen
 ON CONFLICT DO NOTHING;
