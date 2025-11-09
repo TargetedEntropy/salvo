@@ -86,6 +86,25 @@ cargo test -- --nocapture
 ./examples/update_prices.sh
 ```
 
+## Data Import
+
+### Import EVE SDE (Static Data Export)
+
+The project includes sample data, but you can import real EVE data:
+
+```bash
+# Download EVE SDE (optional)
+./scripts/download_sde.sh
+
+# Import into database
+cargo run --bin import_sde -- --sde-path ./sde
+
+# Or download manually from:
+# https://developers.eveonline.com/resources/downloads
+```
+
+**Note:** The SDE is large (~500MB compressed, ~2GB uncompressed). The import tool currently imports type definitions. Blueprint import is a work in progress due to the complexity of the SDE YAML structure.
+
 ## Development
 
 ### Project Structure

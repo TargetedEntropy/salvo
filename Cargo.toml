@@ -35,3 +35,10 @@ dotenvy = "0.15"
 
 # Date/time handling
 chrono = { version = "0.4", features = ["serde"] }
+
+# YAML parsing for SDE import
+serde_yaml = "0.9"
+
+[[bin]]
+name = "import_sde"
+path = "src/bin/import_sde.rs"
