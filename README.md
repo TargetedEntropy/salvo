@@ -61,6 +61,31 @@ curl http://127.0.0.1:3000/
 # Expected: Salvo Backend API - Serpentis Salvage Industrial Planner
 ```
 
+## Testing
+
+### Run Tests
+
+```bash
+# Run all unit tests
+cargo test
+
+# Run integration tests
+cargo test --test integration_test
+
+# Run with output
+cargo test -- --nocapture
+```
+
+### Example Scripts
+
+```bash
+# Test salvage analysis
+./examples/test_salvage.sh
+
+# Update market prices from Fuzzworks
+./examples/update_prices.sh
+```
+
 ## Development
 
 ### Project Structure
@@ -120,7 +145,8 @@ Analyze salvage and return buildable items with profitability estimates.
   "salvage_items": [
     {"name": "Tripped Power Circuit", "quantity": 120},
     {"name": "Charred Micro Circuit", "quantity": 95}
-  ]
+  ],
+  "reprocessing_efficiency": 0.5
 }
 ```
 
@@ -128,17 +154,61 @@ Analyze salvage and return buildable items with profitability estimates.
 ```json
 {
   "materials": [
-    {"name": "Tritanium", "quantity": 1500}
+    {"type_id": 34, "name": "Tritanium", "quantity": 1500, "unit_price": 5.5, "total_value": 8250.0}
   ],
+  "total_material_value": 19755.0,
   "buildable_items": [
     {
-      "name": "Small Capacitor Control Circuit I",
+      "product_name": "Small Capacitor Control Circuit I",
       "match_percentage": 100.0,
-      "estimated_profit": 85000.0,
+      "can_build": true,
+      "estimated_profit": 84000.0,
+      "product_price": 85000.0,
+      "material_cost": 1000.0,
       "missing_materials": []
     }
+  ],
+  "reprocessing_efficiency_used": 0.5
+}
+```
+
+### `POST /api/market/update`
+
+Update market prices from Fuzzworks API (Jita region).
+
+**Request:**
+```json
+{
+  "type_ids": [34, 35, 36, 37]
+}
+```
+
+**Response:**
+```json
+{
+  "updated_count": 4,
+  "prices": [
+    {"type_id": 34, "sell_price": 5.5, "buy_price": 5.0}
   ]
 }
+```
+
+### `POST /api/market/prices`
+
+Get cached market prices from database.
+
+**Request:**
+```json
+{
+  "type_ids": [34, 35, 36]
+}
+```
+
+**Response:**
+```json
+[
+  {"type_id": 34, "sell_price": 5.5, "buy_price": 5.0, "updated_at": "2025-11-09T00:00:00Z"}
+]
 ```
 
 ## Roadmap
