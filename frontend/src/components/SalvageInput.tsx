@@ -4,6 +4,7 @@ import { SalvageItem } from '../types';
 interface SalvageInputProps {
   salvageItems: SalvageItem[];
   onAddItem: (item: SalvageItem) => void;
+  onAddItems: (items: SalvageItem[]) => void;
   onRemoveItem: (index: number) => void;
   onClear: () => void;
 }
@@ -20,6 +21,7 @@ const COMMON_SALVAGE = [
 const SalvageInput: React.FC<SalvageInputProps> = ({
   salvageItems,
   onAddItem,
+  onAddItems,
   onRemoveItem,
   onClear,
 }) => {
@@ -118,7 +120,7 @@ const SalvageInput: React.FC<SalvageInputProps> = ({
       return;
     }
 
-    items.forEach(item => onAddItem(item));
+    onAddItems(items);
     setPasteText('');
     setShowPaste(false);
   };

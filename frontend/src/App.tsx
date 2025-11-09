@@ -16,6 +16,10 @@ function App() {
     setSalvageItems([...salvageItems, item]);
   };
 
+  const handleAddItems = (items: SalvageItem[]) => {
+    setSalvageItems([...salvageItems, ...items]);
+  };
+
   const handleRemoveItem = (index: number) => {
     setSalvageItems(salvageItems.filter((_, i) => i !== index));
   };
@@ -77,6 +81,7 @@ function App() {
             <SalvageInput
               salvageItems={salvageItems}
               onAddItem={handleAddItem}
+              onAddItems={handleAddItems}
               onRemoveItem={handleRemoveItem}
               onClear={handleClear}
             />
