@@ -46,14 +46,29 @@ pub struct MarketAggregate {
 
 #[derive(Debug, Serialize, Deserialize)]
 pub struct PriceData {
-    pub weightedAverage: f64,
+    #[serde(rename = "weightedAverage")]
+    pub weighted_average: f64,
     pub max: f64,
     pub min: f64,
     pub stddev: f64,
     pub median: f64,
     pub volume: i64,
-    pub orderCount: i64,
+    #[serde(rename = "orderCount")]
+    pub order_count: i64,
     pub percentile: f64,
+}
+
+// Re-export with old field names for backwards compatibility
+impl PriceData {
+    #[allow(non_snake_case)]
+    pub fn weightedAverage(&self) -> f64 {
+        self.weighted_average
+    }
+
+    #[allow(non_snake_case)]
+    pub fn orderCount(&self) -> i64 {
+        self.order_count
+    }
 }
 
 impl Default for FuzzworksClient {
