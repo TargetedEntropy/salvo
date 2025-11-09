@@ -217,5 +217,3 @@ The end goal is to evolve this tool into a **comprehensive industrial intelligen
 
 ---
 
-*Authored by: Project Lead — Brian Merriam*  
-*Document: `claude.md` — Version 1.0*
