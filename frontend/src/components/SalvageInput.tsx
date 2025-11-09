@@ -58,13 +58,24 @@ const SalvageInput: React.FC<SalvageInputProps> = ({
       if (!trimmed) continue;
 
       // Try different formats:
-      // "Item Name x123" or "Item Name  123" or "Item Name	123"
+      // EVE multi-column format: "Item Name    3    Salvaged Materials    Material    0.03 m3    13,065.96 ISK"
+      // "Item Name x123"
+      // "Item Name  123"
+      // "Item Name	123"
 
-      // Match "x" separator (e.g., "Tripped Power Circuit x120")
-      let match = trimmed.match(/^(.+?)\s+x\s*(\d+)$/i);
+      let match = null;
+
+      // Match EVE detailed format with multiple columns (item name, qty, category, type, volume, ISK)
+      // Example: "Broken Drone Transceiver    3    Salvaged Materials    Material            0.03 m3    13,065.96 ISK"
+      match = trimmed.match(/^(.+?)\s{2,}(\d+)\s{2,}.+$/);
 
       if (!match) {
-        // Match tab or multiple spaces (e.g., "Tripped Power Circuit	120" or "Tripped Power Circuit  120")
+        // Match "x" separator (e.g., "Tripped Power Circuit x120")
+        match = trimmed.match(/^(.+?)\s+x\s*(\d+)$/i);
+      }
+
+      if (!match) {
+        // Match tab or multiple spaces at end (e.g., "Tripped Power Circuit	120" or "Tripped Power Circuit  120")
         match = trimmed.match(/^(.+?)[\t\s]{2,}(\d+)$/);
       }
 
@@ -122,7 +133,7 @@ const SalvageInput: React.FC<SalvageInputProps> = ({
               className="input w-full h-32 font-mono text-sm"
               value={pasteText}
               onChange={(e) => setPasteText(e.target.value)}
-              placeholder="Paste items from EVE inventory here...&#10;&#10;Supported formats:&#10;Tripped Power Circuit x120&#10;Charred Micro Circuit  95&#10;Fried Interface Circuit	40"
+              placeholder="Paste items from EVE inventory here...&#10;&#10;Supported formats:&#10;Broken Drone Transceiver    3    Salvaged Materials    Material    0.03 m3    13,065.96 ISK&#10;Tripped Power Circuit x120&#10;Charred Micro Circuit  95"
             />
             <div className="flex gap-2 mt-2">
               <button onClick={handlePasteItems} className="btn-primary flex-1">
