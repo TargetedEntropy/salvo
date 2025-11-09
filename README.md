@@ -296,14 +296,6 @@ Contributions are welcome! Please read [CONTRIBUTING.md](CONTRIBUTING.md) for gu
 
 This is an early-stage project. Contributions welcome once MVP is complete.
 
-## License
-
-TBD
-
-## Contact
-
-Project Lead: Brian Merriam
-
 ## Acknowledgments
 
 EVE Online and all related assets are property of CCP Games.
