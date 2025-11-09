@@ -25,6 +25,8 @@ const SalvageInput: React.FC<SalvageInputProps> = ({
 }) => {
   const [name, setName] = useState('');
   const [quantity, setQuantity] = useState('');
+  const [pasteText, setPasteText] = useState('');
+  const [showPaste, setShowPaste] = useState(false);
 
   const handleAdd = () => {
     if (name.trim() && quantity && parseInt(quantity) > 0) {
@@ -47,10 +49,100 @@ const SalvageInput: React.FC<SalvageInputProps> = ({
     }
   };
 
+  const parsePastedItems = (text: string): SalvageItem[] => {
+    const items: SalvageItem[] = [];
+    const lines = text.split('\n');
+
+    for (const line of lines) {
+      const trimmed = line.trim();
+      if (!trimmed) continue;
+
+      // Try different formats:
+      // "Item Name x123" or "Item Name  123" or "Item Name	123"
+
+      // Match "x" separator (e.g., "Tripped Power Circuit x120")
+      let match = trimmed.match(/^(.+?)\s+x\s*(\d+)$/i);
+
+      if (!match) {
+        // Match tab or multiple spaces (e.g., "Tripped Power Circuit	120" or "Tripped Power Circuit  120")
+        match = trimmed.match(/^(.+?)[\t\s]{2,}(\d+)$/);
+      }
+
+      if (!match) {
+        // Match single space with number at end (e.g., "Tripped Power Circuit 120")
+        match = trimmed.match(/^(.+?)\s+(\d+)$/);
+      }
+
+      if (match) {
+        const itemName = match[1].trim();
+        const qty = parseInt(match[2]);
+
+        if (itemName && qty > 0) {
+          items.push({
+            name: itemName,
+            quantity: qty,
+          });
+        }
+      }
+    }
+
+    return items;
+  };
+
+  const handlePasteItems = () => {
+    const items = parsePastedItems(pasteText);
+
+    if (items.length === 0) {
+      alert('No valid items found. Expected format:\nItem Name x123\nor\nItem Name  123');
+      return;
+    }
+
+    items.forEach(item => onAddItem(item));
+    setPasteText('');
+    setShowPaste(false);
+  };
+
   return (
     <div className="card">
       <h2 className="text-2xl font-bold mb-4 text-eve-accent">Salvage Input</h2>
 
+      {/* Paste from Inventory Section */}
+      <div className="mb-4 p-3 bg-eve-gray rounded">
+        <button
+          onClick={() => setShowPaste(!showPaste)}
+          className="w-full text-left font-semibold text-eve-accent hover:text-eve-accent/80 transition-colors flex justify-between items-center"
+        >
+          <span>📋 Paste from EVE Inventory</span>
+          <span className="text-sm">{showPaste ? '▼' : '▶'}</span>
+        </button>
+
+        {showPaste && (
+          <div className="mt-3">
+            <textarea
+              className="input w-full h-32 font-mono text-sm"
+              value={pasteText}
+              onChange={(e) => setPasteText(e.target.value)}
+              placeholder="Paste items from EVE inventory here...&#10;&#10;Supported formats:&#10;Tripped Power Circuit x120&#10;Charred Micro Circuit  95&#10;Fried Interface Circuit	40"
+            />
+            <div className="flex gap-2 mt-2">
+              <button onClick={handlePasteItems} className="btn-primary flex-1">
+                Import Items
+              </button>
+              <button
+                onClick={() => {
+                  setPasteText('');
+                  setShowPaste(false);
+                }}
+                className="btn-secondary"
+              >
+                Cancel
+              </button>
+            </div>
+          </div>
+        )}
+      </div>
+
+      {/* Manual Input Section */}
       <div className="mb-4">
         <label className="label">Item Name</label>
         <input
