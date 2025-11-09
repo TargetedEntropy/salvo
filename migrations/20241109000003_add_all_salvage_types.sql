@@ -12,12 +12,12 @@ INSERT INTO eve_types (type_id, name, description, group_id, category_id) VALUES
 (30750, 'Thruster Console', 'Salvaged from wrecks', 966, 25),
 (30751, 'Ward Console', 'Salvaged from wrecks', 966, 25),
 -- T2 Salvage
-(25595, 'Tripped Power Circuit', 'Salvaged from wrecks', 966, 25) ON CONFLICT DO NOTHING,
-(25596, 'Charred Micro Circuit', 'Salvaged from wrecks', 966, 25) ON CONFLICT DO NOTHING,
-(25597, 'Fried Interface Circuit', 'Salvaged from wrecks', 966, 25) ON CONFLICT DO NOTHING,
-(25604, 'Contaminated Nanite Compound', 'Salvaged from wrecks', 966, 25) ON CONFLICT DO NOTHING,
-(25605, 'Burned Logic Circuit', 'Salvaged from wrecks', 966, 25) ON CONFLICT DO NOTHING,
-(25606, 'Armor Plates', 'Salvaged from wrecks', 966, 25) ON CONFLICT DO NOTHING,
+(25595, 'Tripped Power Circuit', 'Salvaged from wrecks', 966, 25),
+(25596, 'Charred Micro Circuit', 'Salvaged from wrecks', 966, 25),
+(25597, 'Fried Interface Circuit', 'Salvaged from wrecks', 966, 25),
+(25604, 'Contaminated Nanite Compound', 'Salvaged from wrecks', 966, 25),
+(25605, 'Burned Logic Circuit', 'Salvaged from wrecks', 966, 25),
+(25606, 'Armor Plates', 'Salvaged from wrecks', 966, 25),
 -- Ancient Salvage
 (30752, 'Alloyed Tritanium Bar', 'Ancient salvage', 966, 25),
 (30753, 'Carbonized Lead', 'Ancient salvage', 966, 25),
@@ -26,7 +26,8 @@ INSERT INTO eve_types (type_id, name, description, group_id, category_id) VALUES
 (30756, 'Cramped EM Pulse Generators', 'Ancient salvage', 966, 25),
 (30757, 'Defective Current Pump', 'Ancient salvage', 966, 25),
 (30758, 'Single-Walled Nanotubes', 'Ancient salvage', 966, 25),
-(30759, 'Smashed Trigger Unit', 'Ancient salvage', 966, 25);
+(30759, 'Smashed Trigger Unit', 'Ancient salvage', 966, 25)
+ON CONFLICT DO NOTHING;
 
 -- Material reprocessing yields for new salvage items
 -- These are simplified/estimated values for testing
@@ -96,4 +97,5 @@ INSERT INTO material_reprocessing (source_type_id, material_type_id, quantity) V
 (30759, 34, 110), -- Tritanium
 (30759, 35, 70),  -- Pyerite
 (30759, 36, 40),  -- Mexallon
-(30759, 37, 18);  -- Isogen
+(30759, 37, 18)  -- Isogen
+ON CONFLICT DO NOTHING;

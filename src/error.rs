@@ -34,7 +34,10 @@ impl IntoResponse for ApiError {
                 tracing::error!("External API error: {}", msg);
                 (StatusCode::BAD_GATEWAY, msg.as_str())
             }
-            ApiError::NotFound(ref msg) => (StatusCode::NOT_FOUND, msg.as_str()),
+            ApiError::NotFound(ref msg) => {
+                tracing::error!("Not found: {}", msg);
+                (StatusCode::NOT_FOUND, msg.as_str())
+            }
             ApiError::InvalidInput(ref msg) => (StatusCode::BAD_REQUEST, msg.as_str()),
             ApiError::Internal(ref msg) => {
                 tracing::error!("Internal error: {}", msg);
