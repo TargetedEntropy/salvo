@@ -14,15 +14,24 @@ See [PROJECT_SPEC.md](PROJECT_SPEC.md) for detailed requirements and architectur
 
 ## Features (MVP - In Development)
 
+### Backend
 - Salvage analysis API endpoint
 - Material calculation from reprocessed salvage
 - Blueprint matching against available materials
 - Market price integration (ESI/Fuzzworks)
 - Profitability ranking
 
+### Frontend
+- Modern React + TypeScript web interface
+- EVE Online themed dark UI (Tailwind CSS)
+- **Paste from EVE Inventory** - Copy items directly from game inventory
+- Real-time salvage analysis and profitability calculations
+- Interactive material and buildable items display
+
 ## Tech Stack
 
 - **Backend:** Rust + Axum web framework
+- **Frontend:** React 18 + TypeScript + Tailwind CSS v3
 - **Database:** SQLite + SQLx
 - **External APIs:** EVE ESI, Fuzzworks Market API
 
@@ -31,12 +40,13 @@ See [PROJECT_SPEC.md](PROJECT_SPEC.md) for detailed requirements and architectur
 ### Prerequisites
 
 - Rust 1.70+ ([install via rustup](https://rustup.rs/))
+- Node.js 18+ and npm ([install via nodejs.org](https://nodejs.org/))
 - SQLite 3
 - Docker (optional, for containerized deployment)
 
 ### Setup
 
-**Option 1: Local Development**
+**Option 1: Local Development (Full Stack)**
 ```bash
 # Clone the repository
 git clone <repository-url>
@@ -45,11 +55,25 @@ cd salvo
 # Copy environment template
 cp .env.example .env
 
-# Build and run
+# Terminal 1: Start Backend (port 3000)
+cargo run
+
+# Terminal 2: Start Frontend (port 3001)
+cd frontend
+npm install
+PORT=3001 npm start
+```
+
+The backend will start on `http://127.0.0.1:3000`
+The frontend will start on `http://127.0.0.1:3001`
+
+**Option 2: Backend Only (API Development)**
+```bash
+# Run backend server
 cargo run
 ```
 
-**Option 2: Docker**
+**Option 3: Docker**
 ```bash
 # Build and run with Docker Compose
 docker-compose up -d
@@ -59,18 +83,19 @@ docker build -t salvo-backend .
 docker run -p 3000:3000 -v $(pwd)/data:/app/data salvo-backend
 ```
 
-The server will start on `http://127.0.0.1:3000`
-
 ### Verify Installation
 
 ```bash
-# Health check
+# Backend health check
 curl http://127.0.0.1:3000/health
 # Expected: OK
 
-# API root
+# Backend API root
 curl http://127.0.0.1:3000/
 # Expected: Salvo Backend API - Serpentis Salvage Industrial Planner
+
+# Frontend (open in browser)
+# Navigate to http://localhost:3001
 ```
 
 ## Testing
@@ -130,10 +155,19 @@ src/
   services/         - Business logic
   external/         - External API clients
 migrations/         - Database migrations
+frontend/
+  src/
+    components/     - React components
+    api.ts          - API client
+    types.ts        - TypeScript type definitions
+    App.tsx         - Main application component
+  tailwind.config.js - Tailwind CSS configuration
+  package.json      - Frontend dependencies
 ```
 
 ### Common Commands
 
+**Backend:**
 ```bash
 # Run in development mode
 cargo run
@@ -155,6 +189,25 @@ cargo clippy
 cargo fmt
 ```
 
+**Frontend:**
+```bash
+# Install dependencies
+cd frontend
+npm install
+
+# Run development server
+PORT=3001 npm start
+
+# Build for production
+npm run build
+
+# Run tests
+npm test
+
+# Type check
+npm run build
+```
+
 ### Environment Variables
 
 Copy `.env.example` to `.env` and configure:
@@ -162,6 +215,40 @@ Copy `.env.example` to `.env` and configure:
 ```bash
 DATABASE_URL=sqlite:salvo.db
 RUST_LOG=salvo_backend=debug,tower_http=debug
+```
+
+### Using the Frontend
+
+**Paste from EVE Inventory Feature:**
+
+The frontend includes a convenient feature to import salvage items directly from your EVE Online inventory:
+
+1. In EVE Online, open your inventory and select the salvage items
+2. Copy the items (Ctrl+C or Cmd+C)
+3. In the Salvo web interface, click "📋 Paste from EVE Inventory"
+4. Paste your clipboard contents into the text area
+5. Click "Import Items"
+
+**Supported Formats:**
+```
+Tripped Power Circuit x120          (x-separator)
+Charred Micro Circuit  95            (multiple spaces)
+Fried Interface Circuit	40           (tab-separated)
+Contaminated Nanite Compound 50      (single space)
+```
+
+The parser automatically detects and handles all common EVE inventory export formats.
+
+**CORS Configuration:**
+
+The backend is configured with permissive CORS for development (`CorsLayer::permissive()` in `src/main.rs:37`). For production deployments, replace this with specific allowed origins:
+
+```rust
+.layer(
+    CorsLayer::new()
+        .allow_origin("https://yourdomain.com".parse::<HeaderValue>().unwrap())
+        .allow_methods([Method::GET, Method::POST])
+)
 ```
 
 ## API Endpoints
@@ -271,13 +358,14 @@ Contributions are welcome! Please read [CONTRIBUTING.md](CONTRIBUTING.md) for gu
 
 ## Roadmap
 
-### Phase 1 (Current - MVP Complete ✅)
+### Phase 1 (MVP Complete ✅)
 - Core salvage analysis engine
 - Blueprint matching
 - Basic market integration
 
-### Phase 2
-- Frontend UI (React + Tailwind)
+### Phase 2 (Current - Partially Complete)
+- ✅ Frontend UI (React + Tailwind)
+- ✅ Paste from EVE Inventory feature
 - Character skill integration via ESI
 - Historical market tracking
 
