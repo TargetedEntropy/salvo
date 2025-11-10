@@ -127,7 +127,7 @@ const SalvageInput: React.FC<SalvageInputProps> = ({
 
   return (
     <div className="card">
-      <h2 className="text-2xl font-bold mb-4 text-eve-accent">Salvage Input</h2>
+      <h2 className="text-2xl font-bold mb-4 text-eve-accent">Salvage & Loot Input</h2>
 
       {/* Paste from Inventory Section */}
       <div className="mb-4 p-3 bg-eve-gray rounded">
@@ -135,7 +135,7 @@ const SalvageInput: React.FC<SalvageInputProps> = ({
           onClick={() => setShowPaste(!showPaste)}
           className="w-full text-left font-semibold text-eve-accent hover:text-eve-accent/80 transition-colors flex justify-between items-center"
         >
-          <span>📋 Paste from EVE Inventory</span>
+          <span>📋 Paste from EVE Inventory (Salvage, Modules, Ammo)</span>
           <span className="text-sm">{showPaste ? '▼' : '▶'}</span>
         </button>
 
@@ -145,7 +145,7 @@ const SalvageInput: React.FC<SalvageInputProps> = ({
               className="input w-full h-32 font-mono text-sm"
               value={pasteText}
               onChange={(e) => setPasteText(e.target.value)}
-              placeholder="Paste items from EVE inventory here...&#10;&#10;Supported formats:&#10;Broken Drone Transceiver    3    Salvaged Materials    Material    0.03 m3    13,065.96 ISK&#10;Tripped Power Circuit x120&#10;Charred Micro Circuit  95"
+              placeholder="Paste salvage, loot, modules, or ammo from EVE inventory...&#10;&#10;Supported formats:&#10;Broken Drone Transceiver    3    Salvaged Materials    Material    0.03 m3    13,065.96 ISK&#10;Light Neutron Blaster I    5    Hybrid Turret    Module    5 m3    15,000 ISK&#10;Antimatter Charge M x1000"
             />
             <div className="flex gap-2 mt-2">
               <button onClick={handlePasteItems} className="btn-primary flex-1">
