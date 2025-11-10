@@ -32,11 +32,17 @@ export interface BuildableItem {
   missing_materials: MissingMaterial[];
 }
 
+export interface UnknownItem {
+  name: string;
+  quantity: number;
+}
+
 export interface AnalysisResponse {
   materials: Material[];
   total_material_value: number;
   buildable_items: BuildableItem[];
   reprocessing_efficiency_used: number;
+  unknown_items: UnknownItem[];
 }
 
 export interface AnalysisRequest {

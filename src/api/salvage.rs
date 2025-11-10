@@ -30,6 +30,13 @@ pub struct AnalyzeSalvageResponse {
     pub total_material_value: f64,
     pub buildable_items: Vec<BuildableItem>,
     pub reprocessing_efficiency_used: f64,
+    pub unknown_items: Vec<UnknownItem>,
+}
+
+#[derive(Debug, Serialize)]
+pub struct UnknownItem {
+    pub name: String,
+    pub quantity: i32,
 }
 
 #[derive(Debug, Serialize)]
@@ -75,19 +82,37 @@ pub async fn analyze_salvage(
 
     // Step 1: Look up salvage items in database
     let mut salvage_inputs = Vec::new();
-    for item in &request.salvage_items {
-        let eve_type = queries::get_type_by_name(&pool, &item.name)
-            .await
-            .map_err(ApiError::Database)?
-            .ok_or_else(|| {
-                ApiError::NotFound(format!("Salvage item '{}' not found in database", item.name))
-            })?;
+    let mut unknown_items = Vec::new();
 
-        salvage_inputs.push(SalvageInput {
-            type_id: eve_type.type_id,
-            name: eve_type.name,
-            quantity: item.quantity,
-        });
+    for item in &request.salvage_items {
+        match queries::get_type_by_name(&pool, &item.name).await {
+            Ok(Some(eve_type)) => {
+                salvage_inputs.push(SalvageInput {
+                    type_id: eve_type.type_id,
+                    name: eve_type.name,
+                    quantity: item.quantity,
+                });
+            }
+            Ok(None) => {
+                tracing::warn!("Item '{}' not found in database", item.name);
+                unknown_items.push(UnknownItem {
+                    name: item.name.clone(),
+                    quantity: item.quantity,
+                });
+            }
+            Err(e) => return Err(ApiError::Database(e)),
+        }
+    }
+
+    // If all items are unknown, return empty analysis with unknown items
+    if salvage_inputs.is_empty() && !unknown_items.is_empty() {
+        return Ok(Json(AnalyzeSalvageResponse {
+            materials: Vec::new(),
+            total_material_value: 0.0,
+            buildable_items: Vec::new(),
+            reprocessing_efficiency_used: reprocessing_efficiency,
+            unknown_items,
+        }));
     }
 
     // Step 2: Calculate reprocessed materials
@@ -195,5 +220,6 @@ pub async fn analyze_salvage(
         total_material_value,
         buildable_items,
         reprocessing_efficiency_used: reprocessing_efficiency,
+        unknown_items,
     }))
 }

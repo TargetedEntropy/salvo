@@ -129,6 +129,32 @@ function App() {
           <div className="lg:col-span-2 space-y-6">
             {analysisResult ? (
               <>
+                {analysisResult.unknown_items && analysisResult.unknown_items.length > 0 && (
+                  <div className="card border-2 border-yellow-600/50 bg-yellow-900/20">
+                    <h3 className="text-xl font-bold mb-3 text-yellow-400 flex items-center">
+                      <svg className="w-6 h-6 mr-2" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" />
+                      </svg>
+                      Unknown Items (Cannot Reprocess)
+                    </h3>
+                    <p className="text-sm text-gray-400 mb-3">
+                      The following items are not in our database or cannot be reprocessed:
+                    </p>
+                    <div className="space-y-2">
+                      {analysisResult.unknown_items.map((item, index) => (
+                        <div
+                          key={index}
+                          className="bg-eve-gray/50 p-3 rounded border border-yellow-600/30"
+                        >
+                          <div className="flex justify-between items-center">
+                            <span className="font-medium text-yellow-200">{item.name}</span>
+                            <span className="text-gray-400">×{item.quantity}</span>
+                          </div>
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+                )}
                 <MaterialsList
                   materials={analysisResult.materials}
                   totalValue={analysisResult.total_material_value}
