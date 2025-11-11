@@ -24,3 +24,4 @@ Thumbs.db
 # SDE data (large download)
 /sde/
 *.zip
+sde_data/
