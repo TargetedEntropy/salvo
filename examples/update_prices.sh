@@ -1,10 +1,10 @@
 #!/bin/bash
 
-# Script to update market prices from Fuzzworks API
+# Script to update market prices from ESI API
 
 BASE_URL="http://127.0.0.1:3000"
 
-echo "=== Updating Market Prices from Fuzzworks API ==="
+echo "=== Updating Market Prices from ESI API ==="
 echo ""
 
 # Update prices for common salvage and materials

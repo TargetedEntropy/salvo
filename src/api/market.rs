@@ -25,7 +25,7 @@ pub struct MarketPriceOutput {
     pub buy_price: Option<f64>,
 }
 
-/// Update market prices from Fuzzworks API
+/// Update market prices from ESI API
 pub async fn update_market_prices(
     State(pool): State<DbPool>,
     Json(request): Json<UpdateMarketPricesRequest>,
@@ -42,7 +42,7 @@ pub async fn update_market_prices(
     let market_data = fuzzworks
         .get_market_data(&request.type_ids)
         .await
-        .map_err(|e| ApiError::ExternalApi(format!("Fuzzworks API error: {}", e)))?;
+        .map_err(|e| ApiError::ExternalApi(format!("ESI API error: {}", e)))?;
 
     let mut updated_count = 0;
     let mut prices_output = Vec::new();

@@ -2,40 +2,72 @@ use reqwest::Client;
 use serde::{Deserialize, Serialize};
 use std::collections::HashMap;
 
-const FUZZWORKS_BASE_URL: &str = "https://market.fuzzwork.co.uk/aggregates";
+const ESI_BASE_URL: &str = "https://esi.evetech.net/latest";
 
-pub struct FuzzworksClient {
+pub struct EsiClient {
     client: Client,
 }
 
-impl FuzzworksClient {
+impl EsiClient {
     pub fn new() -> Self {
         Self {
-            client: Client::new(),
+            client: Client::builder()
+                .user_agent("Salvo-Industrial-Planner/1.0")
+                .build()
+                .unwrap(),
         }
     }
 
-    /// Fetch aggregated market data from Fuzzworks
-    /// Region 10000002 = The Forge (Jita)
-    pub async fn get_market_data(&self, type_ids: &[i32]) -> anyhow::Result<HashMap<i32, MarketAggregate>> {
-        let type_ids_str: Vec<String> = type_ids.iter().map(|id| id.to_string()).collect();
-        let url = format!(
-            "{}/?region=10000002&types={}",
-            FUZZWORKS_BASE_URL,
-            type_ids_str.join(",")
-        );
+    /// Fetch market prices from ESI
+    /// Returns global average prices
+    pub async fn get_market_data(&self, _type_ids: &[i32]) -> anyhow::Result<HashMap<i32, MarketAggregate>> {
+        let url = format!("{}/markets/prices/", ESI_BASE_URL);
 
         let response = self.client.get(&url).send().await?;
-        let data: HashMap<String, MarketAggregate> = response.json().await?;
+        let prices: Vec<EsiPrice> = response.json().await?;
 
-        // Convert string keys to i32
-        let result: HashMap<i32, MarketAggregate> = data
-            .into_iter()
-            .filter_map(|(k, v)| k.parse::<i32>().ok().map(|type_id| (type_id, v)))
-            .collect();
+        // Convert to our internal format
+        let mut result = HashMap::new();
+        for price in prices {
+            result.insert(
+                price.type_id,
+                MarketAggregate {
+                    buy: PriceData {
+                        weighted_average: price.average_price.unwrap_or(0.0),
+                        max: 0.0,
+                        min: 0.0,
+                        stddev: 0.0,
+                        median: 0.0,
+                        volume: 0,
+                        order_count: 0,
+                        percentile: 0.0,
+                    },
+                    sell: PriceData {
+                        weighted_average: price.average_price.unwrap_or(0.0),
+                        max: 0.0,
+                        min: 0.0,
+                        stddev: 0.0,
+                        median: 0.0,
+                        volume: 0,
+                        order_count: 0,
+                        percentile: 0.0,
+                    },
+                },
+            );
+        }
 
         Ok(result)
     }
+}
+
+#[derive(Debug, Serialize, Deserialize)]
+struct EsiPrice {
+    #[serde(rename = "type_id")]
+    pub type_id: i32,
+    #[serde(rename = "average_price")]
+    pub average_price: Option<f64>,
+    #[serde(rename = "adjusted_price")]
+    pub adjusted_price: Option<f64>,
 }
 
 #[derive(Debug, Serialize, Deserialize)]
@@ -71,8 +103,11 @@ impl PriceData {
     }
 }
 
-impl Default for FuzzworksClient {
+impl Default for EsiClient {
     fn default() -> Self {
         Self::new()
     }
 }
+
+// Backwards compatibility alias
+pub type FuzzworksClient = EsiClient;

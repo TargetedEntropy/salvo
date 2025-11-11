@@ -18,7 +18,7 @@ See [PROJECT_SPEC.md](PROJECT_SPEC.md) for detailed requirements and architectur
 - Salvage analysis API endpoint
 - Material calculation from reprocessed salvage
 - Blueprint matching against available materials
-- Market price integration (ESI/Fuzzworks)
+- Market price integration (ESI)
 - Profitability ranking
 
 ### Frontend
@@ -33,7 +33,7 @@ See [PROJECT_SPEC.md](PROJECT_SPEC.md) for detailed requirements and architectur
 - **Backend:** Rust + Axum web framework
 - **Frontend:** React 18 + TypeScript + Tailwind CSS v3
 - **Database:** SQLite + SQLx
-- **External APIs:** EVE ESI, Fuzzworks Market API
+- **External APIs:** EVE ESI (market prices, character data)
 
 ## Quick Start
 
@@ -172,7 +172,7 @@ scripts/
   download_sde.sh   - Download EVE SDE data (~600MB)
 examples/
   test_salvage.sh   - Test API with sample salvage data
-  update_prices.sh  - Update market prices from Fuzzworks
+  update_prices.sh  - Update market prices from ESI
 frontend/
   src/
     components/     - React components
@@ -310,7 +310,7 @@ Analyze salvage and return buildable items with profitability estimates.
 
 ### `POST /api/market/update`
 
-Update market prices from Fuzzworks API (Jita region).
+Update market prices from ESI (global average prices).
 
 **Request:**
 ```json
@@ -396,7 +396,6 @@ See `.env.example` for available configuration options:
 
 - **EVE SDE** - Static game data (blueprints, materials, types)
 - **ESI API** - Market data and character information
-- **Fuzzworks** - Aggregated market pricing
 
 ## Testing the API
 
@@ -406,7 +405,7 @@ Use the provided example scripts to test the backend API:
 # Test salvage analysis with sample data
 ./examples/test_salvage.sh
 
-# Update market prices from Fuzzworks
+# Update market prices from ESI
 ./examples/update_prices.sh
 ```
 
