@@ -127,20 +127,36 @@ cargo test -- --nocapture
 
 ### Import EVE SDE (Static Data Export)
 
-The project includes sample data, but you can import real EVE data:
+Salvo includes a Python script to import **all reprocessable items** from the official EVE SDE:
 
 ```bash
-# Download EVE SDE (optional)
-./scripts/download_sde.sh
+# First, run the backend once to create the database
+cargo run --bin salvo-backend
 
-# Import into database
-cargo run --bin import_sde -- --sde-path ./sde
-
-# Or download manually from:
-# https://developers.eveonline.com/resources/downloads
+# In a new terminal, run the SDE import script
+python3 scripts/import_sde.py
 ```
 
-**Note:** The SDE is large (~500MB compressed, ~2GB uncompressed). The import tool currently imports type definitions. Blueprint import is a work in progress due to the complexity of the SDE YAML structure.
+The import script will:
+1. Download the EVE SDE (~600MB) from CCP's official servers
+2. Extract and parse the data files
+3. Import 9,800+ reprocessable items and 46,000+ material yields
+
+**What gets imported:**
+- All ships, modules, ammunition, and items that can be reprocessed
+- Complete reprocessing material yields from `typeMaterials.yaml`
+- Item names and metadata from `types.yaml`
+
+**Requirements:**
+- Python 3.8+
+- `pyyaml` and `requests` packages (usually pre-installed)
+- ~1GB free disk space for the SDE data
+- 2-3 minutes for import to complete
+
+**Manual SDE download:**
+If you prefer to download manually: https://developers.eveonline.com/resources/downloads
+
+**Note:** The import script automatically skips the download if the SDE directory already exists. To force a fresh download, delete the `sde_data` directory first.
 
 ## Development
 
@@ -155,6 +171,8 @@ src/
   services/         - Business logic
   external/         - External API clients
 migrations/         - Database migrations
+scripts/
+  import_sde.py     - Import EVE SDE data (9,800+ items)
 frontend/
   src/
     components/     - React components
@@ -359,20 +377,24 @@ Contributions are welcome! Please read [CONTRIBUTING.md](CONTRIBUTING.md) for gu
 ## Roadmap
 
 ### Phase 1 (MVP Complete ✅)
-- Core salvage analysis engine
-- Blueprint matching
-- Basic market integration
+- ✅ Core salvage analysis engine
+- ✅ Blueprint matching
+- ✅ Basic market integration
+- ✅ Complete EVE SDE import (9,800+ items)
 
 ### Phase 2 (Current - Partially Complete)
 - ✅ Frontend UI (React + Tailwind)
 - ✅ Paste from EVE Inventory feature
+- ✅ Full reprocessing data for all game items
 - Character skill integration via ESI
 - Historical market tracking
+- Build queue optimization
 
 ### Phase 3
 - Multi-faction support (Guristas, Blood Raiders, Angels)
-- Build queue simulation
-- Market trend analysis
+- Market trend analysis and forecasting
+- Corporation/alliance shared inventory
+- Blueprint research tracking
 
 ## Data Sources
 

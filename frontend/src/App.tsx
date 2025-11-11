@@ -129,6 +129,11 @@ function App() {
           <div className="lg:col-span-2 space-y-6">
             {analysisResult ? (
               <>
+                <MaterialsList
+                  materials={analysisResult.materials}
+                  totalValue={analysisResult.total_material_value}
+                />
+                <BuildableItemsList items={analysisResult.buildable_items} />
                 {analysisResult.unknown_items && analysisResult.unknown_items.length > 0 && (
                   <div className="card border-2 border-yellow-600/50 bg-yellow-900/20">
                     <h3 className="text-xl font-bold mb-3 text-yellow-400 flex items-center">
@@ -155,11 +160,6 @@ function App() {
                     </div>
                   </div>
                 )}
-                <MaterialsList
-                  materials={analysisResult.materials}
-                  totalValue={analysisResult.total_material_value}
-                />
-                <BuildableItemsList items={analysisResult.buildable_items} />
               </>
             ) : (
               <div className="card text-center py-12">
