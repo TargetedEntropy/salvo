@@ -60,18 +60,20 @@ const SalvageInput: React.FC<SalvageInputProps> = ({
       if (!trimmed) continue;
 
       // Try different formats:
-      // EVE multi-column format: "Item Name    3    Salvaged Materials    Material    0.03 m3    13,065.96 ISK"
+      // EVE multi-column format WITH quantity: "Item Name    3    Salvaged Materials    Material    0.03 m3    13,065.96 ISK"
+      // EVE multi-column format WITHOUT quantity: "Item Name    Salvaged Materials    Material    0.03 m3    13,065.96 ISK"
       // "Item Name x123"
       // "Item Name  123"
       // "Item Name	123"
 
-      let match = null;
+      let itemName: string | null = null;
+      let qty = 0;
 
       // Match EVE detailed format with multiple columns (item name, qty, category, type, volume, ISK)
       // Example: "Broken Drone Transceiver    3    Salvaged Materials    Material            0.03 m3    13,065.96 ISK"
       // This format uses tabs and/or multiple spaces between columns
       // Try to match: name, then (tab OR 2+ spaces), then number, then (tab OR space), then rest
-      match = trimmed.match(/^(.+?)(?:\t+|\s{2,})(\d+)(?:\t|\s).+$/);
+      let match = trimmed.match(/^(.+?)(?:\t+|\s{2,})(\d+)(?:\t|\s).+$/);
 
       if (!match) {
         // Also try just: name, whitespace, number, whitespace, anything else
@@ -94,15 +96,37 @@ const SalvageInput: React.FC<SalvageInputProps> = ({
       }
 
       if (match) {
-        const itemName = match[1].trim();
-        const qty = parseInt(match[2]);
+        itemName = match[1].trim();
+        qty = parseInt(match[2]);
+      } else {
+        // No quantity found - check if this is EVE's full format without quantity
+        // Format: "Item Name    Category    Type    Volume    ISK"
+        // Example: "Catalyst - Intolerable        Destroyer    Ship            55,000 m3    1,119,445.16 ISK"
+        // Split by tabs or multiple spaces to get columns
+        const columns = trimmed.split(/\t+|\s{2,}/).map(c => c.trim()).filter(c => c);
 
-        if (itemName && qty > 0) {
-          items.push({
-            name: itemName,
-            quantity: qty,
-          });
+        if (columns.length >= 2) {
+          // First column is name, check if this looks like a ship (contains "Ship" keyword)
+          const possibleName = columns[0];
+          const restOfLine = columns.slice(1).join(' ').toLowerCase();
+
+          // Check if "Ship" appears in the type/category columns
+          if (restOfLine.includes('ship')) {
+            // Skip ships with custom names - they won't be identified correctly
+            continue;
+          }
+
+          // Not a ship - assume it's a fitted module with quantity 1
+          itemName = possibleName;
+          qty = 1;
         }
+      }
+
+      if (itemName && qty > 0) {
+        items.push({
+          name: itemName,
+          quantity: qty,
+        });
       }
     }
 
@@ -116,7 +140,9 @@ const SalvageInput: React.FC<SalvageInputProps> = ({
       alert('No valid items found. Supported formats:\n\n' +
         '• EVE multi-column: Item Name    3    Salvaged Materials...\n' +
         '• x-separator: Item Name x123\n' +
-        '• Space/tab separated: Item Name  123');
+        '• Space/tab separated: Item Name  123\n' +
+        '• Items without quantity (fitted modules): Item Name    Module    Ship Equipment...\n\n' +
+        'Note: Ships with custom names are automatically skipped.');
       return;
     }
 
@@ -145,7 +171,7 @@ const SalvageInput: React.FC<SalvageInputProps> = ({
               className="input w-full h-32 font-mono text-sm"
               value={pasteText}
               onChange={(e) => setPasteText(e.target.value)}
-              placeholder="Paste salvage, loot, modules, or ammo from EVE inventory...&#10;&#10;Supported formats:&#10;Broken Drone Transceiver    3    Salvaged Materials    Material    0.03 m3    13,065.96 ISK&#10;Light Neutron Blaster I    5    Hybrid Turret    Module    5 m3    15,000 ISK&#10;Antimatter Charge M x1000"
+              placeholder="Paste salvage, loot, modules, or ammo from EVE inventory...&#10;&#10;Supported formats:&#10;Broken Drone Transceiver    3    Salvaged Materials    Material    0.03 m3    13,065.96 ISK&#10;Light Neutron Blaster I    5    Hybrid Turret    Module    5 m3    15,000 ISK&#10;Antimatter Charge M x1000&#10;&#10;Items without quantity (fitted modules) are set to quantity 1. Ships are skipped."
             />
             <div className="flex gap-2 mt-2">
               <button onClick={handlePasteItems} className="btn-primary flex-1">
