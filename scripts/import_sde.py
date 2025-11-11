@@ -217,6 +217,11 @@ def import_to_database():
                     quantity = material.get('quantity', 0)
 
                     if material_type_id and quantity > 0:
+                        # Skip if the material type doesn't exist in type_info (deprecated/removed items)
+                        if material_type_id not in type_info:
+                            print(f"Warning: Skipping material {material_type_id} for type {type_id} - material type not found in SDE")
+                            continue
+
                         cursor.execute("""
                             INSERT OR IGNORE INTO material_reprocessing (source_type_id, material_type_id, quantity)
                             VALUES (?, ?, ?)
@@ -245,6 +250,11 @@ def import_to_database():
                     quantity = material.get('quantity', 0)
 
                     if material_type_id and quantity > 0:
+                        # Skip if the material type doesn't exist in type_info (deprecated/removed items)
+                        if material_type_id not in type_info:
+                            print(f"Warning: Skipping blueprint material {material_type_id} for blueprint {type_id} - material type not found in SDE")
+                            continue
+
                         cursor.execute("""
                             INSERT OR IGNORE INTO blueprint_materials (blueprint_type_id, material_type_id, quantity)
                             VALUES (?, ?, ?)
