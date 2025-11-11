@@ -113,38 +113,34 @@ cargo test --test integration_test
 cargo test -- --nocapture
 ```
 
-### Example Scripts
-
-```bash
-# Test salvage analysis
-./examples/test_salvage.sh
-
-# Update market prices from Fuzzworks
-./examples/update_prices.sh
-```
-
 ## Data Import
 
 ### Import EVE SDE (Static Data Export)
 
-Salvo includes a Python script to import **all reprocessable items** from the official EVE SDE:
+Salvo includes scripts to download and import **all reprocessable items** from the official EVE SDE:
 
 ```bash
-# First, run the backend once to create the database
-cargo run --bin salvo-backend
+# Step 1: Download the EVE SDE data (~600MB, optional - import script can download automatically)
+./scripts/download_sde.sh
 
-# In a new terminal, run the SDE import script
+# Step 2: Run the backend once to create the database
+cargo run
+
+# Step 3: In a new terminal, run the SDE import script
 python3 scripts/import_sde.py
 ```
 
-The import script will:
-1. Download the EVE SDE (~600MB) from CCP's official servers
+The import process will:
+1. Download the EVE SDE (~600MB) from CCP's official servers (if not already downloaded)
 2. Extract and parse the data files
-3. Import 9,800+ reprocessable items and 46,000+ material yields
+3. Import 15,000+ types including reprocessable items and manufacturable items
+4. Import 46,000+ reprocessing material yields
+5. Import 17,000+ blueprints with manufacturing requirements
 
 **What gets imported:**
 - All ships, modules, ammunition, and items that can be reprocessed
 - Complete reprocessing material yields from `typeMaterials.yaml`
+- Blueprint definitions and manufacturing requirements from `blueprints.yaml`
 - Item names and metadata from `types.yaml`
 
 **Requirements:**
@@ -156,7 +152,7 @@ The import script will:
 **Manual SDE download:**
 If you prefer to download manually: https://developers.eveonline.com/resources/downloads
 
-**Note:** The import script automatically skips the download if the SDE directory already exists. To force a fresh download, delete the `sde_data` directory first.
+**Note:** Both scripts automatically skip the download if the SDE directory already exists. To force a fresh download, delete the `sde_data` directory first or run `./scripts/download_sde.sh` and choose to re-download.
 
 ## Development
 
@@ -173,6 +169,10 @@ src/
 migrations/         - Database migrations
 scripts/
   import_sde.py     - Import EVE SDE data (9,800+ items)
+  download_sde.sh   - Download EVE SDE data (~600MB)
+examples/
+  test_salvage.sh   - Test API with sample salvage data
+  update_prices.sh  - Update market prices from Fuzzworks
 frontend/
   src/
     components/     - React components
@@ -259,7 +259,7 @@ The parser automatically detects and handles all common EVE inventory export for
 
 **CORS Configuration:**
 
-The backend is configured with permissive CORS for development (`CorsLayer::permissive()` in `src/main.rs:37`). For production deployments, replace this with specific allowed origins:
+The backend is configured with permissive CORS for development (`CorsLayer::permissive()` in `src/main.rs`). For production deployments, replace this with specific allowed origins:
 
 ```rust
 .layer(
@@ -370,17 +370,13 @@ See `.env.example` for available configuration options:
 - `DATABASE_URL` - SQLite database path
 - `RUST_LOG` - Logging level
 
-## Contributing
-
-Contributions are welcome! Please read [CONTRIBUTING.md](CONTRIBUTING.md) for guidelines.
-
 ## Roadmap
 
 ### Phase 1 (MVP Complete ✅)
 - ✅ Core salvage analysis engine
 - ✅ Blueprint matching
 - ✅ Basic market integration
-- ✅ Complete EVE SDE import (9,800+ items)
+- ✅ Complete EVE SDE import (15,000+ types, 17,000+ blueprints)
 
 ### Phase 2 (Current - Partially Complete)
 - ✅ Frontend UI (React + Tailwind)
@@ -402,9 +398,21 @@ Contributions are welcome! Please read [CONTRIBUTING.md](CONTRIBUTING.md) for gu
 - **ESI API** - Market data and character information
 - **Fuzzworks** - Aggregated market pricing
 
+## Testing the API
+
+Use the provided example scripts to test the backend API:
+
+```bash
+# Test salvage analysis with sample data
+./examples/test_salvage.sh
+
+# Update market prices from Fuzzworks
+./examples/update_prices.sh
+```
+
 ## Contributing
 
-This is an early-stage project. Contributions welcome once MVP is complete.
+Contributions are welcome! See [CONTRIBUTING.md](CONTRIBUTING.md) for guidelines.
 
 ## Acknowledgments
 

@@ -103,6 +103,64 @@ def load_types():
     print(f"Loaded {len(type_info)} types")
     return type_info
 
+def load_blueprints():
+    """Load blueprint definitions from blueprints.yaml"""
+    print("Loading blueprint definitions...")
+    blueprints_file = SDE_DIR / "fsd" / "blueprints.yaml"
+
+    if not blueprints_file.exists():
+        print(f"Blueprints file not found at {blueprints_file}")
+        return {}
+
+    with open(blueprints_file, 'r', encoding='utf-8') as f:
+        blueprints_data = yaml.safe_load(f)
+
+    # blueprints_data format: {blueprintTypeID: {activities: {manufacturing: {...}}}}
+    blueprints_map = {}
+    relevant_type_ids = set()
+
+    for blueprint_type_id, blueprint_data in blueprints_data.items():
+        if not isinstance(blueprint_data, dict):
+            continue
+
+        activities = blueprint_data.get('activities', {})
+        manufacturing = activities.get('manufacturing', {})
+
+        if not manufacturing:
+            continue
+
+        # Get product and materials for manufacturing
+        products = manufacturing.get('products', [])
+        materials = manufacturing.get('materials', [])
+        time = manufacturing.get('time', 0)
+
+        if not products or not materials:
+            continue
+
+        # Use first product (most blueprints have only one)
+        product = products[0]
+        product_type_id = product.get('typeID')
+
+        if product_type_id:
+            blueprints_map[blueprint_type_id] = {
+                'product_type_id': product_type_id,
+                'manufacturing_time': time,
+                'materials': materials
+            }
+
+            # Track all relevant type IDs
+            relevant_type_ids.add(blueprint_type_id)
+            relevant_type_ids.add(product_type_id)
+
+            for material in materials:
+                mat_type_id = material.get('typeID')
+                if mat_type_id:
+                    relevant_type_ids.add(mat_type_id)
+
+    print(f"Found {len(blueprints_map)} blueprints with manufacturing data")
+    print(f"Total relevant blueprint type IDs: {len(relevant_type_ids)}")
+    return blueprints_map, relevant_type_ids
+
 def import_to_database():
     """Import types and reprocessing data into SQLite database"""
     print(f"\nConnecting to database: {DB_PATH}")
@@ -115,15 +173,21 @@ def import_to_database():
     cursor = conn.cursor()
 
     # Load all data
-    reprocessing_map, relevant_type_ids = load_type_materials()
+    reprocessing_map, reprocessing_type_ids = load_type_materials()
+    blueprints_map, blueprint_type_ids = load_blueprints()
     type_info = load_types()
 
-    print(f"\nImporting {len(relevant_type_ids)} types...")
+    # Combine all relevant type IDs
+    all_relevant_type_ids = reprocessing_type_ids | blueprint_type_ids
+
+    print(f"\nImporting {len(all_relevant_type_ids)} types...")
     imported_count = 0
     reprocessing_count = 0
+    blueprint_count = 0
+    blueprint_material_count = 0
     skipped_count = 0
 
-    for type_id in relevant_type_ids:
+    for type_id in all_relevant_type_ids:
         info = type_info.get(type_id)
         if not info:
             skipped_count += 1
@@ -161,10 +225,38 @@ def import_to_database():
                         if cursor.rowcount > 0:
                             reprocessing_count += 1
 
+            # Import blueprint data if this is a blueprint
+            if type_id in blueprints_map:
+                blueprint = blueprints_map[type_id]
+                product_type_id = blueprint['product_type_id']
+                manufacturing_time = blueprint['manufacturing_time']
+
+                cursor.execute("""
+                    INSERT OR IGNORE INTO blueprints (blueprint_type_id, product_type_id, manufacturing_time)
+                    VALUES (?, ?, ?)
+                """, (type_id, product_type_id, manufacturing_time))
+
+                if cursor.rowcount > 0:
+                    blueprint_count += 1
+
+                # Import blueprint materials
+                for material in blueprint['materials']:
+                    material_type_id = material.get('typeID')
+                    quantity = material.get('quantity', 0)
+
+                    if material_type_id and quantity > 0:
+                        cursor.execute("""
+                            INSERT OR IGNORE INTO blueprint_materials (blueprint_type_id, material_type_id, quantity)
+                            VALUES (?, ?, ?)
+                        """, (type_id, material_type_id, quantity))
+
+                        if cursor.rowcount > 0:
+                            blueprint_material_count += 1
+
             # Commit every 1000 items
             if (imported_count + skipped_count) % 1000 == 0:
                 conn.commit()
-                print(f"  Progress: {imported_count} types imported, {reprocessing_count} reprocessing entries, {skipped_count} skipped...")
+                print(f"  Progress: {imported_count} types, {reprocessing_count} reprocessing, {blueprint_count} blueprints...")
 
         except Exception as e:
             print(f"Error importing type {type_id} ({name}): {e}")
@@ -175,6 +267,8 @@ def import_to_database():
     print(f"\nImport complete!")
     print(f"  Types imported: {imported_count}")
     print(f"  Reprocessing entries: {reprocessing_count}")
+    print(f"  Blueprints imported: {blueprint_count}")
+    print(f"  Blueprint materials: {blueprint_material_count}")
     print(f"  Types skipped (no info): {skipped_count}")
 
 def main():
