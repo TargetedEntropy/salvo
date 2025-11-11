@@ -88,13 +88,20 @@ pub async fn match_blueprints(
 
         let match_percentage = (satisfied_count as f64 / total_count as f64) * 100.0;
 
-        // Get product info
-        let product = queries::get_type_by_id(pool, blueprint.product_type_id)
-            .await
-            .map_err(ApiError::Database)?
-            .ok_or_else(|| {
-                ApiError::NotFound(format!("Product type {} not found", blueprint.product_type_id))
-            })?;
+        // Get product info - skip blueprints with invalid/deprecated product types
+        let product = match queries::get_type_by_id(pool, blueprint.product_type_id).await {
+            Ok(Some(p)) => p,
+            Ok(None) => {
+                // Product type not found - this is a deprecated/removed item, skip this blueprint
+                tracing::warn!(
+                    "Skipping blueprint {} - product type {} not found (deprecated item)",
+                    blueprint.blueprint_type_id,
+                    blueprint.product_type_id
+                );
+                continue;
+            }
+            Err(e) => return Err(ApiError::Database(e)),
+        };
 
         matches.push(BlueprintMatch {
             blueprint,
