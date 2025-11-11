@@ -236,6 +236,11 @@ def import_to_database():
                 product_type_id = blueprint['product_type_id']
                 manufacturing_time = blueprint['manufacturing_time']
 
+                # Skip if the product type doesn't exist in type_info (deprecated/removed items)
+                if product_type_id not in type_info:
+                    print(f"Warning: Skipping blueprint {type_id} - product type {product_type_id} not found in SDE")
+                    continue
+
                 cursor.execute("""
                     INSERT OR IGNORE INTO blueprints (blueprint_type_id, product_type_id, manufacturing_time)
                     VALUES (?, ?, ?)
