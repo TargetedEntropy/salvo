@@ -215,6 +215,18 @@ pub async fn analyze_salvage(
         });
     }
 
+    // Sort buildable items by match percentage (highest first), then by estimated profit (highest first)
+    buildable_items.sort_by(|a, b| {
+        b.match_percentage
+            .partial_cmp(&a.match_percentage)
+            .unwrap_or(std::cmp::Ordering::Equal)
+            .then_with(|| {
+                b.estimated_profit
+                    .partial_cmp(&a.estimated_profit)
+                    .unwrap_or(std::cmp::Ordering::Equal)
+            })
+    });
+
     Ok(Json(AnalyzeSalvageResponse {
         materials: material_outputs,
         total_material_value,
